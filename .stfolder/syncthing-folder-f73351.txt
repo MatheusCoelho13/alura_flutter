@@ -1,5 +1,0 @@
-# This directory is a Syncthing folder marker.
-# Do not delete.
-
-folderID: ra7py-j3yus
-created: 2025-08-06T19:31:17-03:00
