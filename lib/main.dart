@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TaskInherited (
+    return TaskInherited ( // fazer isso para funcionar a funcao
       child: MaterialApp(
         title: 'Flutter Demeo',
         theme: ThemeData(
