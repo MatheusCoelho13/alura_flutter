@@ -1,28 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:projeto_em_flutter/data/task_inherited.dart';
+import 'package:projeto_em_flutter/components/Task.dart';
+import 'package:projeto_em_flutter/data/Task_dao.dart';
+
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({super.key, required this.TaskContext});
+  const FormScreen({Key? key, required this.taskContext}) : super(key: key);
 
-final BuildContext TaskContext;
+  final BuildContext taskContext;
+
   @override
-  State<FormScreen> createState() => FormScreenState();
+  State<FormScreen> createState() => _FormScreenState();
 }
 
-class FormScreenState extends State<FormScreen> {
-  TextEditingController nameController =
-      TextEditingController();
-  TextEditingController difficultController =
-      TextEditingController();
-  TextEditingController imageController =
-      TextEditingController();
+class _FormScreenState extends State<FormScreen> {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController difficultyController = TextEditingController();
+  TextEditingController imageController = TextEditingController();
+
   final _formKey = GlobalKey<FormState>();
+
+  bool valueValidator(String? value) {
+    if (value != null && value.isEmpty) {
+      return true;
+    }
+    return false;
+  }
+
+  bool difficultyValidator(String? value) {
+    if (value != null && value.isEmpty) {
+      if (int.parse(value) > 5 || int.parse(value) < 1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
       child: Scaffold(
-        appBar: AppBar(title: const Text('NOVA  tarefa')),
+        appBar: AppBar(
+          title: const Text('Nova Tarefa'),
+        ),
         body: Center(
           child: SingleChildScrollView(
             child: Container(
@@ -31,31 +51,26 @@ class FormScreenState extends State<FormScreen> {
               decoration: BoxDecoration(
                 color: Colors.black12,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: Colors.black,
-                  width: 3,
-                ),
+                border: Border.all(width: 3),
               ),
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment:
-                    CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                       validator: (String? value) {
-                        if (value != null &&
-                            value.isEmpty) {
-                          return "Insira o nome da tafera";
+                        if (valueValidator(value)) {
+                          return 'Insira o nome da Tarefa';
                         }
+                        return null;
                       },
                       controller: nameController,
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'nome',
+                        hintText: 'Nome',
                         fillColor: Colors.white70,
                         filled: true,
                       ),
@@ -65,18 +80,17 @@ class FormScreenState extends State<FormScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                       validator: (value) {
-                        if (value!.isEmpty ||
-                            int.parse(value) > 5 ||
-                            int.parse(value) < 1) {
-                          return "Insira a dificuldade  entre 1 a 5";
+                        if (difficultyValidator(value)) {
+                          return 'Insira um Dificuldade entre 1 e 5';
                         }
+                        return null;
                       },
                       keyboardType: TextInputType.number,
-                      controller: difficultController,
+                      controller: difficultyController,
                       textAlign: TextAlign.center,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'difficult',
+                        hintText: 'Dificuldade',
                         fillColor: Colors.white70,
                         filled: true,
                       ),
@@ -88,10 +102,9 @@ class FormScreenState extends State<FormScreen> {
                       onChanged: (text) {
                         setState(() {});
                       },
-                      validator: (String? value) {
-                        if (value != null &&
-                            value.isEmpty) {
-                          return "Insira uma url de imagem";
+                      validator: (value) {
+                        if (valueValidator(value)) {
+                          return 'Insira um URL de Imagem!';
                         }
                         return null;
                       },
@@ -111,55 +124,34 @@ class FormScreenState extends State<FormScreen> {
                     width: 72,
                     decoration: BoxDecoration(
                       color: Colors.blue,
-                      borderRadius: BorderRadius.circular(
-                        10,
-                      ),
-                      border: Border.all(
-                        width: 2,
-                        color: Colors.blue,
-                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(width: 2, color: Colors.blue),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        10,
-                      ),
+                      borderRadius: BorderRadius.circular(10),
                       child: Image.network(
                         imageController.text,
-                        errorBuilder:
-                            (
-                              BuildContext context,
-                              Object exeception,
-                              StackTrace? stackTrace,
-                            ) {
-                              return Image.asset(
-                                './assets/Images/no_photo.png',
-                              );
-                            },
+                        errorBuilder: (BuildContext context, Object exception,
+                            StackTrace? stackTrace) {
+                          return Image.asset('assets/Images/no_photo.png');
+                        },
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      if (_formKey.currentState!
-                          .validate()) {
+                      if (_formKey.currentState!.validate()) {
                         // print(nameController.text);
-                        // print(difficultController.text);
+                        // print(difficultyController.text);
                         // print(imageController.text);
-                        TaskInherited.of(widget.TaskContext).newTask(
-                          nameController.text,
-                          imageController.text,
-                          int.parse(
-                            difficultController.text,
-                          ),
-                        );
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(
+                        TaskDao().save(Task(
+                            nameController.text,
+                            imageController.text,
+                            int.parse(difficultyController.text)));
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              'Printando nova Tarefa',
-                            ),
+                            content: Text('Criando uma nova Tarefa'),
                           ),
                         );
                         Navigator.pop(context);
